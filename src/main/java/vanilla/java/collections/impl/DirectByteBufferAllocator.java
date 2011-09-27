@@ -30,9 +30,11 @@ public class DirectByteBufferAllocator implements ByteBufferAllocator {
     private int partitionSize;
 
     @Override
-    public Cleaner reserve(int partitionSize, int elementSize, String type, int num) {
+    public Cleaner reserve(int partitionSize, int reserveBits, String type, int num) {
         this.partitionSize = partitionSize;
-        final ByteBuffer buffer = this.buffer = ByteBuffer.allocateDirect(partitionSize * elementSize);
+        int capacity = partitionSize * reserveBits / 8;
+        System.out.println("Allocating " + capacity);
+        final ByteBuffer buffer = this.buffer = ByteBuffer.allocateDirect(capacity);
         return new Cleaner() {
             @Override
             public void flush() {
@@ -53,8 +55,8 @@ public class DirectByteBufferAllocator implements ByteBufferAllocator {
     }
 
     @Override
-    public ByteBuffer acquireBooleanBuffer() {
-        return acquire((partitionSize + 7) / 8);
+    public IntBuffer acquireBooleanBuffer() {
+        return acquire((partitionSize + 31) / 32).order(ByteOrder.nativeOrder()).asIntBuffer();
     }
 
     @Override

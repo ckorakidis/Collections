@@ -42,10 +42,10 @@ public class MemoryMappedByteBufferAllocator implements ByteBufferAllocator {
     }
 
     @Override
-    public Cleaner reserve(int partitionSize, int elementSize, String type, int num) throws IOException {
+    public Cleaner reserve(int partitionSize, int reserveBits, String type, int num) throws IOException {
         this.partitionSize = partitionSize;
+        int capacity = partitionSize * reserveBits / 8;
         final File file = new File(baseDirectory, type + "-" + num);
-        int capacity = partitionSize * elementSize;
         long fileSize = file.length();
         if (fileSize > capacity) capacity = (int) fileSize;
 
@@ -78,8 +78,8 @@ public class MemoryMappedByteBufferAllocator implements ByteBufferAllocator {
     }
 
     @Override
-    public ByteBuffer acquireBooleanBuffer() {
-        return acquire((partitionSize + 7) / 8);
+    public IntBuffer acquireBooleanBuffer() {
+        return acquire((partitionSize + 31) / 32).order(ByteOrder.nativeOrder()).asIntBuffer();
     }
 
     @Override

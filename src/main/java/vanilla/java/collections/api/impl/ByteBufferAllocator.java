@@ -25,7 +25,7 @@ import java.nio.*;
 public interface ByteBufferAllocator extends Flushable, Closeable {
     Cleaner reserve(int partitionSize, int elementSize, String type, int num) throws IOException;
 
-    ByteBuffer acquireBooleanBuffer();
+    IntBuffer acquireBooleanBuffer();
 
     ByteBuffer acquireByteBuffer();
 

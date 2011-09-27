@@ -51,6 +51,11 @@ public class BooleanFieldModel extends AbstractFieldModel<Boolean> {
         return IntBuffer.class;
     }
 
+    @Override
+    public String acquireStoreType() {
+        return "acquireBooleanBuffer";
+    }
+
     public static boolean get(IntBuffer array, int index) {
         return ((array.get(index >>> 5) >> index) & 1) != 0;
     }

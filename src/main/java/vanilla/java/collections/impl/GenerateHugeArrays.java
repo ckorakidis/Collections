@@ -17,10 +17,14 @@
 package vanilla.java.collections.impl;
 
 import org.objectweb.asm.*;
+import org.objectweb.asm.util.ASMifierClassVisitor;
+import vanilla.java.collections.api.impl.BCType;
 import vanilla.java.collections.api.impl.FieldModel;
 import vanilla.java.collections.api.impl.TypeModel;
 import vanilla.java.collections.model.Enum8FieldModel;
 import vanilla.java.collections.model.Enumerated16FieldModel;
+
+import java.io.PrintWriter;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -101,6 +105,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(3, 1);
             mv.visitEnd();
         }
+        /*
         {
             mv = cw.visitMethod(ACC_PROTECTED, "createImpl", "()L" + name + ";", null, null);
             mv.visitCode();
@@ -117,6 +122,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(2, 1);
             mv.visitEnd();
         }
+        */
         {
             mv = cw.visitMethod(ACC_PROTECTED, "createIterator", "()Lvanilla/java/collections/api/HugeListIterator;", "()Lvanilla/java/collections/api/HugeListIterator<L" + name + ";>;", null);
             mv.visitCode();
@@ -154,6 +160,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(3, 3);
             mv.visitEnd();
         }
+        /*
         {
             mv = cw.visitMethod(ACC_PUBLIC, "pointerPoolAdd", "(L" + name + "Pointer;)V", null, null);
             mv.visitCode();
@@ -249,6 +256,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(2, 2);
             mv.visitEnd();
         }
+*/
         {
             mv = cw.visitMethod(ACC_PROTECTED + ACC_BRIDGE + ACC_SYNTHETIC, "createPartition", "(I)Lvanilla/java/collections/api/impl/HugePartition;", null, new String[]{"java/io/IOException"});
             mv.visitCode();
@@ -266,7 +274,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(2, 2);
             mv.visitEnd();
         }
-        {
+/*        {
             mv = cw.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "partitionFor", "(J)Lvanilla/java/collections/api/impl/HugePartition;", null, null);
             mv.visitCode();
             Label l0 = new Label();
@@ -298,6 +306,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(1, 1);
             mv.visitEnd();
         }
+        */
         {
             mv = cw.visitMethod(ACC_PROTECTED + ACC_BRIDGE + ACC_SYNTHETIC, "createPointer", "()Ljava/lang/Object;", null, null);
             mv.visitCode();
@@ -313,10 +322,11 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(1, 1);
             mv.visitEnd();
         }
+
         cw.visitEnd();
         final byte[] bytes = cw.toByteArray();
-//        ClassReader cr = new ClassReader(bytes);
-//        cr.accept(new ASMifierClassVisitor(new PrintWriter(System.out)), 0);
+        ClassReader cr = new ClassReader(bytes);
+        cr.accept(new ASMifierClassVisitor(new PrintWriter(System.out)), 0);
         return bytes;
     }
 
@@ -434,7 +444,7 @@ public enum GenerateHugeArrays {
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 2);
             mv.visitVarInsn(ILOAD, 4);
-            mv.visitIntInsn(BIPUSH, 6);
+            mv.visitIntInsn(BIPUSH, tm.recordSize(8));
             mv.visitLdcInsn("part");
             mv.visitVarInsn(ILOAD, 3);
             mv.visitMethodInsn(INVOKEINTERFACE, "vanilla/java/collections/api/impl/ByteBufferAllocator", "reserve", "(IILjava/lang/String;I)Lvanilla/java/collections/api/impl/Cleaner;");
@@ -479,6 +489,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(6, 5);
             mv.visitEnd();
         }
+        /*
         {
             mv = cw.visitMethod(ACC_PUBLIC, "lock", "()Ljava/util/concurrent/locks/ReadWriteLock;", null, null);
             mv.visitCode();
@@ -567,6 +578,7 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(1, 1);
             mv.visitEnd();
         }
+        */
 
         for (FieldModel fm : tm.fields()) {
             {
@@ -587,11 +599,9 @@ public enum GenerateHugeArrays {
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, name + "Partition", fm.fieldName() + "Buffer", fm.bcLStoreType());
                     mv.visitVarInsn(ILOAD, 1);
-                    mv.visitVarInsn(ILOAD, 2);
-                    mv.visitMethodInsn(INVOKEVIRTUAL, fm.bcStoreType(), "put", "(I" + fm.bcLFieldType() + ")" + fm.bcLStoredType());
-                    mv.visitInsn(POP);
+                    mv.visitVarInsn(loadFor(fm.bcType()), 2);
+                    mv.visitMethodInsn(INVOKESTATIC, fm.bcModelType(), "set", "(" + fm.bcLStoreType() + "I" + fm.bcLFieldType() + ")V");
                 }
-
 
                 Label l1 = new Label();
                 mv.visitLabel(l1);
@@ -601,7 +611,7 @@ public enum GenerateHugeArrays {
                 mv.visitLabel(l2);
                 mv.visitLocalVariable("this", "L" + name + "Partition;", null, l0, l2, 0);
                 mv.visitLocalVariable("offset", "I", null, l0, l2, 1);
-                mv.visitLocalVariable("i", "I", null, l0, l2, 2);
+                mv.visitLocalVariable("i", fm.bcLFieldType(), null, l0, l2, 2);
                 mv.visitMaxs(4, 3);
                 mv.visitEnd();
             }
@@ -624,8 +634,8 @@ public enum GenerateHugeArrays {
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, name + "Partition", fm.fieldName() + "Buffer", fm.bcLStoreType());
                     mv.visitVarInsn(ILOAD, 1);
-                    mv.visitMethodInsn(INVOKEVIRTUAL, fm.bcStoreType(), "get", "(I)" + fm.bcLStoredType());
-                    mv.visitInsn(IRETURN);
+                    mv.visitMethodInsn(INVOKESTATIC, fm.bcModelType(), "get", "(" + fm.bcLStoreType() + "I)" + fm.bcLStoredType());
+                    mv.visitInsn(returnFor(fm.bcType()));
                 }
                 Label l1 = new Label();
                 mv.visitLabel(l1);
@@ -635,6 +645,7 @@ public enum GenerateHugeArrays {
                 mv.visitEnd();
             }
         }
+        /*
         {
             mv = cw.visitMethod(ACC_PUBLIC, "compact", "()V", null, null);
             mv.visitCode();
@@ -708,10 +719,13 @@ public enum GenerateHugeArrays {
             mv.visitLocalVariable("this", "L" + name + "Partition;", null, l0, l3, 0);
             mv.visitMaxs(1, 1);
             mv.visitEnd();
-        }
+        }                   */
         cw.visitEnd();
 
-        return cw.toByteArray();
+        final byte[] bytes = cw.toByteArray();
+        ClassReader cr = new ClassReader(bytes);
+        cr.accept(new ASMifierClassVisitor(new PrintWriter(System.out)), 0);
+        return bytes;
     }
 
     public static byte[] dumpPointer(TypeModel tm) {
@@ -775,46 +789,48 @@ public enum GenerateHugeArrays {
             mv.visitMaxs(3, 2);
             mv.visitEnd();
         }
-        {
-            mv = cw.visitMethod(ACC_PUBLIC, "setInt", "(I)V", null, null);
-            mv.visitCode();
-            Label l0 = new Label();
-            mv.visitLabel(l0);
-            mv.visitLineNumber(35, l0);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, name + "Pointer", "partition", "L" + name + "Partition;");
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, name + "Pointer", "offset", "I");
-            mv.visitVarInsn(ILOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, name + "Partition", "setInt", "(II)V");
-            Label l1 = new Label();
-            mv.visitLabel(l1);
-            mv.visitLineNumber(36, l1);
-            mv.visitInsn(RETURN);
-            Label l2 = new Label();
-            mv.visitLabel(l2);
-            mv.visitLocalVariable("this", "L" + name + "Pointer;", null, l0, l2, 0);
-            mv.visitLocalVariable("i", "I", null, l0, l2, 1);
-            mv.visitMaxs(3, 2);
-            mv.visitEnd();
-        }
-        {
-            mv = cw.visitMethod(ACC_PUBLIC, "getInt", "()I", null, null);
-            mv.visitCode();
-            Label l0 = new Label();
-            mv.visitLabel(l0);
-            mv.visitLineNumber(40, l0);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, name + "Pointer", "partition", "L" + name + "Partition;");
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, name + "Pointer", "offset", "I");
-            mv.visitMethodInsn(INVOKEVIRTUAL, name + "Partition", "getInt", "(I)I");
-            mv.visitInsn(IRETURN);
-            Label l1 = new Label();
-            mv.visitLabel(l1);
-            mv.visitLocalVariable("this", "L" + name + "Pointer;", null, l0, l1, 0);
-            mv.visitMaxs(2, 1);
-            mv.visitEnd();
+        for (FieldModel fm : tm.fields()) {
+            {
+                mv = cw.visitMethod(ACC_PUBLIC, "set" + fm.titleFieldName(), "(" + fm.bcLFieldType() + ")V", null, null);
+                mv.visitCode();
+                Label l0 = new Label();
+                mv.visitLabel(l0);
+                mv.visitLineNumber(35, l0);
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, name + "Pointer", "partition", "L" + name + "Partition;");
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, name + "Pointer", "offset", "I");
+                mv.visitVarInsn(ILOAD, 1);
+                mv.visitMethodInsn(INVOKEVIRTUAL, name + "Partition", "set" + fm.titleFieldName(), "(I" + fm.bcLFieldType() + ")V");
+                Label l1 = new Label();
+                mv.visitLabel(l1);
+                mv.visitLineNumber(36, l1);
+                mv.visitInsn(RETURN);
+                Label l2 = new Label();
+                mv.visitLabel(l2);
+                mv.visitLocalVariable("this", "L" + name + "Pointer;", null, l0, l2, 0);
+                mv.visitLocalVariable("i", fm.bcLFieldType(), null, l0, l2, 1);
+                mv.visitMaxs(3, 2);
+                mv.visitEnd();
+            }
+            {
+                mv = cw.visitMethod(ACC_PUBLIC, "get" + fm.titleFieldName(), "()" + fm.bcLFieldType(), null, null);
+                mv.visitCode();
+                Label l0 = new Label();
+                mv.visitLabel(l0);
+                mv.visitLineNumber(40, l0);
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, name + "Pointer", "partition", "L" + name + "Partition;");
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, name + "Pointer", "offset", fm.bcLFieldType());
+                mv.visitMethodInsn(INVOKEVIRTUAL, name + "Partition", "get" + fm.titleFieldName(), "(I)" + fm.bcLFieldType());
+                mv.visitInsn(IRETURN);
+                Label l1 = new Label();
+                mv.visitLabel(l1);
+                mv.visitLocalVariable("this", "L" + name + "Pointer;", null, l0, l1, 0);
+                mv.visitMaxs(2, 1);
+                mv.visitEnd();
+            }
         }
         {
             mv = cw.visitMethod(ACC_PUBLIC, "setText", "(Ljava/lang/String;)V", null, null);
@@ -1525,7 +1541,30 @@ public enum GenerateHugeArrays {
         }
         cw.visitEnd();
 
-        return cw.toByteArray();
+        final byte[] bytes = cw.toByteArray();
+//        ClassReader cr = new ClassReader(bytes);
+//        cr.accept(new ASMifierClassVisitor(new PrintWriter(System.out)), 0);
+
+        return bytes;
+    }
+
+
+    private static final int[] returnForArray = {IRETURN, LRETURN, DRETURN, FRETURN, ARETURN};
+
+    private static int returnFor(BCType bcType) {
+        return returnForArray[bcType.ordinal()];
+    }
+
+    private static final int[] loadForArray = {ILOAD, LLOAD, DLOAD, FLOAD, ALOAD};
+
+    private static int loadFor(BCType bcType) {
+        return loadForArray[bcType.ordinal()];
+    }
+
+    private static final int[] storeForArray = {ISTORE, LSTORE, DSTORE, FSTORE, ASTORE};
+
+    private static int storeFor(BCType bcType) {
+        return storeForArray[bcType.ordinal()];
     }
 }
 

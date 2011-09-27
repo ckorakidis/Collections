@@ -46,7 +46,7 @@ public class HugeArrayBuilderTest {
         Thread t = monitorThread();
 
 //        final long length = 128 * 1000 * 1000 * 1000L;
-        final long length = 10 * 1000 * 1000 * 1000L;
+        final long length = 3 * 1000 * 1000 * 1000L;
         HugeList<MutableBoolean> hugeList = new HugeArrayBuilder<MutableBoolean>() {{
             capacity = length;
         }}.create();

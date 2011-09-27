@@ -29,7 +29,7 @@ public class VanillaHugeListIterator<E> implements HugeListIterator<E> {
     public VanillaHugeListIterator(AbstractHugeCollection<E> list, E pointer) {
         this.list = list;
         this.pointer = pointer;
-        index(-1);
+        index(-1L);
     }
 
     @Override
@@ -118,11 +118,6 @@ public class VanillaHugeListIterator<E> implements HugeListIterator<E> {
     @Override
     public void recycle() {
         list.recycle(this);
-    }
-
-    @Override
-    public void index(int index) {
-        throw new Error("Not implemented");
     }
 
     @Override

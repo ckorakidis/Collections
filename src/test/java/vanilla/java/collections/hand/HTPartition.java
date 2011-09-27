@@ -20,6 +20,7 @@ import vanilla.java.collections.api.impl.ByteBufferAllocator;
 import vanilla.java.collections.api.impl.Cleaner;
 import vanilla.java.collections.api.impl.HugePartition;
 import vanilla.java.collections.model.Enumerated16FieldModel;
+import vanilla.java.collections.model.IntFieldModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class HTPartition implements HugePartition {
         this.allocator = allocator;
         this.partitionNumber = partitionNumber;
         final int partitionSize = list.partitionSize();
-        reserved = allocator.reserve(partitionSize, 6, "part", partitionNumber);
+        reserved = allocator.reserve(partitionSize, 48, "part", partitionNumber);
         intBuffer = allocator.acquireIntBuffer();
         textBuffer = allocator.acquireCharBuffer();
         allocator.endOfReserve();
@@ -67,11 +68,11 @@ public class HTPartition implements HugePartition {
     }
 
     public void setInt(int offset, int i) {
-        intBuffer.put(offset, i);
+        IntFieldModel.set(intBuffer, offset, i);
     }
 
     public int getInt(int offset) {
-        return intBuffer.get(offset);
+        return IntFieldModel.get(intBuffer, offset);
     }
 
     public void setText(int offset, String id) {
