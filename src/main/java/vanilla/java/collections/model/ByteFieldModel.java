@@ -24,75 +24,63 @@ import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
 
 public class ByteFieldModel extends AbstractFieldModel<Byte> {
-  public ByteFieldModel(String fieldName, int fieldNumber) {
-    super(fieldName, fieldNumber);
-  }
+    public ByteFieldModel(String fieldName) {
+        super(fieldName);
+    }
 
-  @Override
-  public Object arrayOfField(int size) {
-    return newArrayOfField(size, null);
-  }
+    @Override
+    public Object arrayOfField(int size) {
+        return newArrayOfField(size, null);
+    }
 
-  @Override
-  public int sizeOf(int elements) {
-    return sizeOf0(elements);
-  }
+    @Override
+    public int sizeOf(int elements) {
+        return sizeOf0(elements);
+    }
 
-  private static int sizeOf0(int elements) {
-    return elements;
-  }
+    private static int sizeOf0(int elements) {
+        return elements;
+    }
 
-  public static ByteBuffer newArrayOfField(int size, MappedFileChannel mfc) {
-    return acquireByteBuffer(mfc, sizeOf0(size));
-  }
-
-
-  @Override
-  public Class storeType() {
-    return ByteBuffer.class;
-  }
+    public static ByteBuffer newArrayOfField(int size, MappedFileChannel mfc) {
+        return acquireByteBuffer(mfc, sizeOf0(size));
+    }
 
 
-  @Override
-  public Byte getAllocation(Object[] arrays, int index) {
-    ByteBuffer array = (ByteBuffer) arrays[fieldNumber];
-    return get(array, index);
-  }
+    @Override
+    public Class storeType() {
+        return ByteBuffer.class;
+    }
 
-  public static byte get(ByteBuffer array, int index) {
-    return array.get(index);
-  }
 
-  @Override
-  public void setAllocation(Object[] arrays, int index, Byte value) {
-    ByteBuffer array = (ByteBuffer) arrays[fieldNumber];
-    set(array, index, value);
-  }
+    public static byte get(ByteBuffer array, int index) {
+        return array.get(index);
+    }
 
-  public static void set(ByteBuffer array, int index, byte value) {
-    array.put(index, value);
-  }
+    public static void set(ByteBuffer array, int index, byte value) {
+        array.put(index, value);
+    }
 
-  @Override
-  public Class<Byte> type() {
-    return (Class) byte.class;
-  }
+    @Override
+    public Class<Byte> type() {
+        return (Class) byte.class;
+    }
 
-  @Override
-  public String bcLFieldType() {
-    return "B";
-  }
+    @Override
+    public String bcLFieldType() {
+        return "B";
+    }
 
-  @Override
-  public short equalsPreference() {
-    return 8;
-  }
+    @Override
+    public int equalsPreference() {
+        return 8;
+    }
 
-  public static void write(ObjectOutput out, byte b) throws IOException {
-    out.writeByte(b);
-  }
+    public static void write(ObjectOutput out, byte b) throws IOException {
+        out.writeByte(b);
+    }
 
-  public static byte read(ObjectInput in) throws IOException {
-    return in.readByte();
-  }
+    public static byte read(ObjectInput in) throws IOException {
+        return in.readByte();
+    }
 }

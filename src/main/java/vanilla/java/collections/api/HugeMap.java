@@ -19,4 +19,22 @@ package vanilla.java.collections.api;
 import java.util.Map;
 
 public interface HugeMap<K, V> extends Map<K, V>, HugeContainer {
+    @Override
+    public HugeSet<K> keySet();
+
+    @Override
+    public HugeCollection<V> values();
+
+    @Override
+    public HugeSet<Entry<K, V>> entrySet();
+
+    public HugeCollection<HugeEntry<K, V>> filter(Predicate<HugeEntry<K, V>> predicate);
+
+    public <T> HugeCollection<T> forEach(Procedure<HugeEntry<K, V>, T> procedure);
+
+    public int update(Updater<HugeEntry<K, V>> updater);
+
+    public Class<K> keyType();
+
+    public Class<V> valueType();
 }
